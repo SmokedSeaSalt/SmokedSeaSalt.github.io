@@ -1,6 +1,6 @@
 ---
-title: Piscine
-description: My piscine experience and projects.
+title: Shortcut Keypad
+description: Some usefull sites to fix current bugs/issues/features.
 author: Mathijs
 date: 2025-04-15 11:57:00 +0100
 categories: [Projects]
