@@ -74,7 +74,9 @@ our script must always be able to display the following information:
 - The current available RAM on your server and its utilization rate as a percentage.
 - The current available storage on your server and its utilization rate as a percentage.
 - The current utilization rate of your processors as a percentage.
+? /proc/stat  ->  proccesor stats
 - The date and time of the last reboot.
+who -b
 - Whether LVM is active or not.
 - The number of active connections.
 - The number of users using the server.
@@ -91,4 +93,5 @@ Linux: sha1sum born2beroot.vdi
 This is an example of what kind of output you will get:
 - 6e657c4619944be17df3c31faa030c25e43e40af
 
-Please note that your virtual machine’s signature may be altered after your first evaluation. To solve this problem, you can duplicate your virtual machine or use save state.{: .prompt-tip }
+Please note that your virtual machine’s signature may be altered after your first evaluation. To solve this problem, you can duplicate your virtual machine or use save state
+{: .prompt-tip }
