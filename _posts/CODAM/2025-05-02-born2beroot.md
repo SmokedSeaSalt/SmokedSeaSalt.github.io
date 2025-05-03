@@ -7,7 +7,7 @@ categories: [CODAM]
 tags: []
 pin: false
 math: false
-mermaid: false
+mermaid: true
 ---
 
 ## Virtualbox setup
@@ -98,9 +98,10 @@ You have to install and configure sudo following strict rules.
 - For security reasons too, the paths that can be used by sudo must be restricted. Example: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin
 
 change the sudo config file with: sudo visudo
-Add the folling code
+Add the following code
 
-```/etc/sudoers.tmp
+/etc/sudoers.tmp
+```
 #Born2beRoot changes
 # change log folder
 Defaults	logfile="/var/log/sudo/sudo.log"
@@ -113,6 +114,27 @@ Defaults	requiretty
 # set paths to be used by sudo
 Defaults	secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
 ```
+## Password policy
+[man page](https://linux.die.net/man/8/pam_pwquality)
+[example implementation](https://www.velaninfo.com/rs/techtips/debian-vs-ubuntu-distros/)
+google for reject_username
+
+change the password policy file with: nano /etc/pam.d/passwd
+add the following code
+
+
+
+You have to implement a strong password policy.
+-Your password has to expire every 30 days.
+- The minimum number of days allowed before the modification of a password will be set to 2.
+- The user has to receive a warning message 7 days before their password expires.
+- Your password must be at least 10 characters long. It must contain an uppercase letter, a lowercase letter, and a number. Also, it must not contain more than 3 consecutive identical characters.
+- The password must not include the name of the user.
+- The following rule does not apply to the root password: The password must have at least 7 characters that are not part of the former password.
+- Of course, your root password has to comply with this policy.
+
+
+
 
 ## Todo
 
@@ -127,19 +149,7 @@ An SSH service will be running on the mandatory port 4242 in your virtual machin
 
 You have to configure your operating system with the UFW firewall and thus leave only port 4242 open in your virtual machine.
 
-## Password policy
-[man page](https://linux.die.net/man/8/pam_pwquality)
-google for reject_username
 
-
-You have to implement a strong password policy.
--Your password has to expire every 30 days.
-- The minimum number of days allowed before the modification of a password will be set to 2.
-- The user has to receive a warning message 7 days before their password expires.
-- Your password must be at least 10 characters long. It must contain an uppercase letter, a lowercase letter, and a number. Also, it must not contain more than 3 consecutive identical characters.
-- The password must not include the name of the user.
-- The following rule does not apply to the root password: The password must have at least 7 characters that are not part of the former password.
-- Of course, your root password has to comply with this policy.
 
 
 
