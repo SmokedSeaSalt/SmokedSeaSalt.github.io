@@ -187,9 +187,13 @@ During the defense, you will be asked to explain how this script works. You will
 
 our script must always be able to display the following information:
 - The architecture of your operating system and its kernel version.
+	- uname -a
 - The number of physical processors.
+	- nproc
 - The number of virtual processors.
+	- nproc --all
 - The current available RAM on your server and its utilization rate as a percentage.
+	- free
 - The current available storage on your server and its utilization rate as a percentage.
 - The current utilization rate of your processors as a percentage.
 	- ? /proc/stat  ->  proccesor stats
@@ -206,7 +210,8 @@ our script must always be able to display the following information:
 - The IPv4 address of your server and its MAC (Media Access Control) address.
 - The number of commands executed with the sudo program.
 
-
+rename monitoring.sh to get ridd of spelling error
+move monitoring.sh to /usr/local/bin
 
 
 
