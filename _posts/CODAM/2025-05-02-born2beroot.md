@@ -68,26 +68,22 @@ Current passwords:
 ## install sudo and setup users
 
 ### sudo
-su -> to enter root
-apt install sudo -> install the program
-newgrp sudo -> create a new group called sudo
-sudo adduser mvan-rij sudo -> adds user to sudo
-groups mvan-rij -> check if sudo is listed
+1. su -> to enter root
+2. apt install sudo -> install the program
+3. newgrp sudo -> create a new group called sudo
+4. sudo adduser mvan-rij sudo -> adds user to sudo
+5. groups mvan-rij -> check if sudo is listed
 
 ### user42 group
-
-sudo groupadd user42 -> adds user42 to /etc/group
-sudo adduser mvan-rij user42 -> adds mvan-rij to group user42
-
-exit -> from root go back to mvan-rij
-exit -> log out and back in to mvan-rij
-
-groups -> sudo and user42 should be in there
+1. sudo groupadd user42 -> adds user42 to /etc/group
+2. sudo adduser mvan-rij user42 -> adds mvan-rij to group user42
+3. exit -> from root go back to mvan-rij
+4. exit -> log out and back in to mvan-rij
+5. groups -> sudo and user42 should be in there
 
 ## setup sudo
-
-[custom logfile](https://tverma.hashnode.dev/custom-sudo-logs-file-linux)
-[sudoers manpage](https://linux.die.net/man/5/sudoers)
+[custom logfile](https://tverma.hashnode.dev/custom-sudo-logs-file-linux)\
+[sudoers manpage](https://linux.die.net/man/5/sudoers)\
 [password tries](https://askubuntu.com/questions/534868/how-can-i-change-the-number-of-password-entry-attempts-allowed-by-sudo)
 
 You have to install and configure sudo following strict rules.
@@ -97,10 +93,8 @@ You have to install and configure sudo following strict rules.
 - The TTY mode has to be enabled for security reasons.
 - For security reasons too, the paths that can be used by sudo must be restricted. Example: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin
 
-change the sudo config file with: sudo visudo
-Add the following code
-
-/etc/sudoers.tmp
+1. change the sudo config file with: sudo visudo
+2. Add the following code to /etc/sudoers.tmp
 ```
 #Born2beRoot changes
 # change log folder
@@ -115,50 +109,76 @@ Defaults	requiretty
 Defaults	secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
 ```
 ## Password policy
-[man page](https://linux.die.net/man/8/pam_pwquality)
+[man page](https://linux.die.net/man/8/pam_pwquality)\
 [example implementation](https://www.velaninfo.com/rs/techtips/debian-vs-ubuntu-distros/)
-google for reject_username
 
-change the password policy file with: nano /etc/pam.d/passwd
-add the following code
+1. get pam_pwquality to use the flags: sudo apt install libpam-pwnquality
+2. change the expire time and minimum time before modification with: nano /etc/login.defs
+3. edit the following lines to:
+```
+PASS_MAX_DAYS	30
+PASS_MIN_DAYS	2
+PASS_WARN_AGE	7
+```
+4. change the password policy file with: nano /etc/pam.d/common-password
+5. add the following lines to:
+```
+#Born2beRoot changes
+password	requisite		pam_pwquality.so retry=3 minlen=10 ucredit=-1 lcredit=-1 dcredit=-1 maxrepeat=3 difok=7 refect_username
+password	requisite		pam_pwquality.so retry=3 minlen=10 ucredit=-1 lcredit=-1 dcredit=-1 maxrepeat=3 refect_username enforce_for_root
+```
 
-
-
-You have to implement a strong password policy.
--Your password has to expire every 30 days.
-- The minimum number of days allowed before the modification of a password will be set to 2.
-- The user has to receive a warning message 7 days before their password expires.
-- Your password must be at least 10 characters long. It must contain an uppercase letter, a lowercase letter, and a number. Also, it must not contain more than 3 consecutive identical characters.
-- The password must not include the name of the user.
-- The following rule does not apply to the root password: The password must have at least 7 characters that are not part of the former password.
-- Of course, your root password has to comply with this policy.
-
-
-
-
-## Todo
-
-AppArmor for Debian must be running at startup
-- what is apparmor
-	user privilages manager
-- how to install
-- how to setup
-
-
+## SSH and firewall
+### SSH
 An SSH service will be running on the mandatory port 4242 in your virtual machine. For security reasons, it must not be possible to connect using SSH as root.
 
+1. sudo apt install openssh-server -> install ssh
+2. sudo service ssh status -> check to make sure it is working
+3. sudo nano /etc/ssh/sshd_config -> edit ssh config file
+```
+Port 4242
+
+PermitRootLogin no
+```
+4. sudo nano /etc/ssh/ssh_config -> edit another ssh config file
+```
+Port 4242
+```
+5. sudo service ssh restart -> for the changes to apply
+6. sudo service ssh status -> check to make sure changes are applied
+
+### Firewall (UFW)
 You have to configure your operating system with the UFW firewall and thus leave only port 4242 open in your virtual machine.
 
+1. sudo apt install ufw -> install UFW firewall
+2. sudo ufw enable -> enable the firewall
+3. sudo ufw allow 4242 -> enable port 4242
+4. sudo ufw status -> check current UWF status
 
+### Change virtualbox settings
+1. open settings for the virtual machine
+2. go to the nework tab
+3. click the advaced popout
+4. click port forwarding
+5. set the rules according to the table
+	| Name   | Protocol | Host IP | Host Port | Guest IP | Guest Port |
+	|--------|----------|---------|-----------|----------|------------|
+	| Rule 1 | TCP      |         | 4242      |          | 4242       |
 
+## SSH into the server
+1. start the server
+2. unlock the encryption
+3. open terminal on your main system
+4. ssh mvan-rij@localhost -p 4242 -> connect to the server with user mvan-rij on port 4242
+5. login
+6. you now have a secure remote shell you can do anything on the server with (but with copy paste abilities from your normal system)
 
-
-In addition to the root user, a user with your login as username has to be present.
-- This user has to belong to the user42 and sudo groups
-- During the defense, you will have to create a new user and assign it to a group.
+## set correct timezone and time
+1. sudo timedatectl set-timezone Europe/Amsterdam
+	1. I got the message: Failed to connect to bus: No such file or directory\
+		I fixed this by running the command: sudo service systemd-logind start [found here](https://superuser.com/questions/1561076/systemctl-user-failed-to-connect-to-bus-no-such-file-or-directory-debian-9)
 
 ## Monitoring script
-
 You have to create a simple script called monitoring.sh. It must be developed in bash.
 
 At server startup, the script will display some information (listed below) on all terminals and every 10 minutes (take a look at wall). The banner is optional. No error must be visible.
@@ -186,12 +206,35 @@ our script must always be able to display the following information:
 - The IPv4 address of your server and its MAC (Media Access Control) address.
 - The number of commands executed with the sudo program.
 
+
+
+
+
+
+## Todo
+
+AppArmor for Debian must be running at startup
+- what is apparmor
+	user privilages manager
+- how to install
+- how to setup
+
+difference centOS, rocky, debian.
+difference apt, aptitude
+
+change passwords to be password manager complient.
+
+
+
+
 ## Submission and eval
 
 You only have to turn in a signature.txt file at the root of your Git repository.
 You must paste in it the signature of your machine’s virtual disk. To get this signature, you first have to open the default installation folder /home/mvan-rij/sgoinfre/Born2beRoot.
 Then, retrieve the signature from the ".vdi" file of your virtual machine in sha1 format.
 Linux: sha1sum born2beroot.vdi
+
+- During the defense, you will have to create a new user and assign it to a group.
 
 This is an example of what kind of output you will get:
 - 6e657c4619944be17df3c31faa030c25e43e40af
@@ -201,3 +244,4 @@ This is an example of what kind of output you will get:
 > Please note that your virtual machine’s signature may be altered after your first evaluation. To solve this problem, you can duplicate your virtual machine or use save state
 {: .prompt-tip }
 <!-- markdownlint-restore -->
+
