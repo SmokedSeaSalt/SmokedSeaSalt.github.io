@@ -10,6 +10,9 @@ math: false
 mermaid: true
 ---
 
+## Born2beRoot
+I've written this step by step walktrough for myself. Because after a 3rd reset I didn't want to google the whole setup again. This setup is not guaranteed to get you to pass as you need to demonstrate your abilities and knowledge during the eval.
+
 ## Virtualbox setup
 Downloaded iso from [Debian](https://www.debian.org/)
 
@@ -93,8 +96,10 @@ You have to install and configure sudo following strict rules.
 - The TTY mode has to be enabled for security reasons.
 - For security reasons too, the paths that can be used by sudo must be restricted. Example: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin
 
-1. change the sudo config file with: sudo visudo
-2. Add the following code to /etc/sudoers.tmp
+1. mkdir /var/log/sudo -> make folder to put log in
+2. touch /var/log/sudo/sudo.log
+3. change the sudo config file with: sudo visudo
+4. Add the following code to /etc/sudoers.tmp
 ```
 #Born2beRoot changes
 # change log folder
@@ -107,25 +112,6 @@ Defaults	badpass_message="Nope, not this time!"
 Defaults	requiretty
 # set paths to be used by sudo
 Defaults	secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
-```
-## Password policy
-[man page](https://linux.die.net/man/8/pam_pwquality)\
-[example implementation](https://www.velaninfo.com/rs/techtips/debian-vs-ubuntu-distros/)
-
-1. get pam_pwquality to use the flags: sudo apt install libpam-pwnquality
-2. change the expire time and minimum time before modification with: nano /etc/login.defs
-3. edit the following lines to:
-```
-PASS_MAX_DAYS	30
-PASS_MIN_DAYS	2
-PASS_WARN_AGE	7
-```
-4. change the password policy file with: nano /etc/pam.d/common-password
-5. add the following lines to:
-```
-#Born2beRoot changes
-password	requisite		pam_pwquality.so retry=3 minlen=10 ucredit=-1 lcredit=-1 dcredit=-1 maxrepeat=3 difok=7 refect_username
-password	requisite		pam_pwquality.so retry=3 minlen=10 ucredit=-1 lcredit=-1 dcredit=-1 maxrepeat=3 refect_username enforce_for_root
 ```
 
 ## SSH and firewall
@@ -161,9 +147,10 @@ You have to configure your operating system with the UFW firewall and thus leave
 3. click the advaced popout
 4. click port forwarding
 5. set the rules according to the table
-	| Name   | Protocol | Host IP | Host Port | Guest IP | Guest Port |
-	|--------|----------|---------|-----------|----------|------------|
-	| Rule 1 | TCP      |         | 4242      |          | 4242       |
+
+| Name   | Protocol | Host IP | Host Port | Guest IP | Guest Port |
+|--------|----------|---------|-----------|----------|------------|
+| Rule 1 | TCP      |         | 4242      |          | 4242       |
 
 ## SSH into the server
 1. start the server
@@ -172,6 +159,29 @@ You have to configure your operating system with the UFW firewall and thus leave
 4. ssh mvan-rij@localhost -p 4242 -> connect to the server with user mvan-rij on port 4242
 5. login
 6. you now have a secure remote shell you can do anything on the server with (but with copy paste abilities from your normal system)
+
+
+## Password policy
+[man page](https://linux.die.net/man/8/pam_pwquality)\
+[example implementation](https://www.velaninfo.com/rs/techtips/debian-vs-ubuntu-distros/)
+
+1. get pam_pwquality to use the flags: sudo apt install libpam-pwnquality
+2. change the expire time and minimum time before modification with: nano /etc/login.defs
+3. edit the following lines to:
+```
+PASS_MAX_DAYS	30
+PASS_MIN_DAYS	2
+PASS_WARN_AGE	7
+```
+4. change the password policy file with: nano /etc/pam.d/common-password
+5. add the following lines to:
+```
+#Born2beRoot changes
+password	requisite		pam_pwquality.so retry=3 minlen=10 ucredit=-1 lcredit=-1 dcredit=-1 maxrepeat=3 difok=7 refect_username
+password	requisite		pam_pwquality.so retry=3 minlen=10 ucredit=-1 lcredit=-1 dcredit=-1 maxrepeat=3 refect_username enforce_for_root
+```
+
+
 
 ## set correct timezone and time
 1. sudo timedatectl set-timezone Europe/Amsterdam
@@ -195,26 +205,104 @@ our script must always be able to display the following information:
 - The current available RAM on your server and its utilization rate as a percentage.
 	- free
 - The current available storage on your server and its utilization rate as a percentage.
+	- df -m -x tmpfs
 - The current utilization rate of your processors as a percentage.
-	- ? /proc/stat  ->  proccesor stats
-	- top row cpu is all cpu's combined.
-	- cpu user, nice, system, idle, iowait, irq, softirq.
-	- to get current percentage = ((user + system) / (user + system + idle)) * 100
+	- /proc/stat  ->  proccesor stats
 - The date and time of the last reboot.
 	- who -b
 - Whether LVM is active or not.
 	-lsblk but only get type colmn and grep for lvm there.
 	-lsblk -o TYPE
 - The number of active connections.
+	- ss -Ht state established
 - The number of users using the server.
+	- users
 - The IPv4 address of your server and its MAC (Media Access Control) address.
+	- hostname
+	- ip link show
 - The number of commands executed with the sudo program.
+	- cat /var/log/sudo/sudo.log
 
-rename monitoring.sh to get ridd of spelling error
-move monitoring.sh to /usr/local/bin
+/usr/local/bin/monitoring.sh
+```bash
+#!/bin/bash
 
+#System info and kernel version
+sysinfo=$(uname -a)
 
+#Number of physical processors
+cpucount=$(nproc)
 
+#Number of virtual processors
+vcpucount=$(nproc --all)
+
+#Current available RAM and util rate %
+ramtotal=$(free --mega | awk ' /^Mem:/ {print $2}')
+ramused=$(free --mega | awk ' /^Mem:/ {print $3}')
+ramfree=$(free --mega | awk ' /^Mem:/ {print $4}')
+rampct=$(awk "BEGIN {print ($ramused / $ramtotal) * 100}")
+rampct=$(printf "%.2f%%" "$rampct")
+
+#Current available storage and util rate %
+disktotal=$(df -m -x tmpfs | grep '/dev/' | grep -v '/boot' | awk '{disktotal += $2} END {print disktotal}')
+diskused=$(df -m -x tmpfs | grep '/dev/' | grep -v '/boot' | awk '{disktotal += $3} END {print disktotal}')
+diskpct=$(awk "BEGIN {print ($diskused / $disktotal) * 100}")
+diskpct=$(printf "%.2f%%" "$diskpct")
+
+#Current CPU util rate %
+cputotal=$(cat /proc/stat | grep 'cpu ' | awk '{print ($2 + $4 + $5)}')
+cpuused=$(cat /proc/stat | grep 'cpu ' | awk '{print ($2 + $4)}')
+cpupct=$(awk "BEGIN {print ($cpuused / $cputotal) * 100}")
+cpupct=$(printf "%.2f%%" "$cpupct")
+
+#Last boot date and time
+boottime=$(who -b | awk '{print $3 " " $4}')
+
+#LVM active?
+lvmactive=$(if lsblk -o TYPE | grep -wq "lvm"; then printf "yes"; else printf "no"; fi)
+
+#Number of active connections
+nconnections=$(ss -Ht state established | wc -l)
+
+#Number of users using the server
+nusers=$(users | wc -w)
+
+#IPv4 adress of server and MAC adress
+ipv4=$(hostname -I)
+macaddr=$(ip link show | grep "link/ether" | awk '{print $2}')
+
+#Number of commands executed with sudo
+nsudo=$(cat /var/log/sudo/sudo.log | wc -l)
+nsudo=$(awk "BEGIN {print ($nsudo / 2)}")
+
+wall "
+#Architechture:  $sysinfo
+#CPU physical:   $cpucount
+#vCPU:           $vcpucount
+#Memory Usage:   $ramused/${ramfree}MB (${rampct})
+#Disk Usage:     $diskused/${disktotal}MB (${diskpct})
+#CPU load:       $cpupct
+#Last boot:      $boottime
+#LVM use:        $lvmactive
+#Connections TCP:$nconnections
+#User log:       $nusers
+#Network:        $ipv4 $macaddr
+#Sudo:           $nsudo
+"
+```
+
+## Crontab
+At server startup, the script will display some information (listed below) on all terminals and every 10 minutes.
+
+[crontab tutorial](https://www.geeksforgeeks.org/crontab-in-linux-with-examples/)
+
+1. sudo crontab -u root -e -> edit crontab for user root
+2. set to run the monitoring.sh every boot
+3. set to run the monitoring.sh every 10 minutes
+```
+@reboot bash /usr/local/bin/monitoring.sh
+*/10 * * * * bash /usr/local/bin/monitoring.sh
+```
 
 ## Todo
 
@@ -229,11 +317,16 @@ difference apt, aptitude
 
 change passwords to be password manager complient.
 
+kijk hoe sudoreplay werkt
 
 
+## Extra info
+
+check for stats in /proc/ -> has a lot of system info in simple text files
+sudo systemctl status cron -> current crontab status and a couple logs
+sudo journalctl -u cron -b -> check cron logs for current boot
 
 ## Submission and eval
-
 You only have to turn in a signature.txt file at the root of your Git repository.
 You must paste in it the signature of your machine’s virtual disk. To get this signature, you first have to open the default installation folder /home/mvan-rij/sgoinfre/Born2beRoot.
 Then, retrieve the signature from the ".vdi" file of your virtual machine in sha1 format.
