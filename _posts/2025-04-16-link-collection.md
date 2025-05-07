@@ -21,6 +21,9 @@ Is a paid subscription, but all exercises can be viewed for free. Just the code 
 [Code project collection](https://github.com/practical-tutorials/project-based-learning)
 A big collection of coding project to learn by doing.
 
+[codewars](https://codewars.com/)
+A collection of coding challenges. Some support multiple languages to compare skill.
+
 [Ben Eater Learn how the internet works](https://eater.net/inet)
 A video walkthrough of every layer of the internet, starting from physical signals over a single wire -> clock signals -> encoding -> framing -> OSI layers -> Internet protocol -> ARP -> routing -> TCP -> DNS.
 
