@@ -310,10 +310,6 @@ At server startup, the script will display some information (listed below) on al
 */10 * * * * bash /usr/local/bin/monitoring.sh
 ```
 
-## Todo
-
-kijk hoe sudoreplay werkt
-
 ## Extra info
 
 check for stats in /proc/ -> has a lot of system info in simple text files
