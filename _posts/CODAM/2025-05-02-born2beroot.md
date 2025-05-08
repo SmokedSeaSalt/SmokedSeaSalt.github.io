@@ -63,10 +63,7 @@ install steps:
 26. Device for boot loader installation: VBOX_HARDDISK
 27. installation complete: Continue
 
-Current passwords:
-- root: codam2025
-- user mvan-rij: codam2025
-- drive encription: codam2025
+
 
 ## install sudo and setup users
 
@@ -180,8 +177,7 @@ PASS_WARN_AGE	7
 password	requisite		pam_pwquality.so retry=3 minlen=10 ucredit=-1 lcredit=-1 dcredit=-1 maxrepeat=3 difok=7 refect_username
 password	requisite		pam_pwquality.so retry=3 minlen=10 ucredit=-1 lcredit=-1 dcredit=-1 maxrepeat=3 refect_username enforce_for_root
 ```
-
-
+6. passwd -> start the password manager to change the password to a new one. mess around with it to check if the rules are applied correctly.
 
 ## set correct timezone and time
 1. sudo timedatectl set-timezone Europe/Amsterdam
@@ -207,7 +203,7 @@ our script must always be able to display the following information:
 - The current available storage on your server and its utilization rate as a percentage.
 	- df -m -x tmpfs
 - The current utilization rate of your processors as a percentage.
-	- /proc/stat  ->  proccesor stats
+	- [vmstat](https://linux.die.net/man/8/vmstat)
 - The date and time of the last reboot.
 	- who -b
 - Whether LVM is active or not.
@@ -250,10 +246,9 @@ diskpct=$(awk "BEGIN {print ($diskused / $disktotal) * 100}")
 diskpct=$(printf "%.2f%%" "$diskpct")
 
 #Current CPU util rate %
-cputotal=$(cat /proc/stat | grep 'cpu ' | awk '{print ($2 + $4 + $5)}')
-cpuused=$(cat /proc/stat | grep 'cpu ' | awk '{print ($2 + $4)}')
-cpupct=$(awk "BEGIN {print ($cpuused / $cputotal) * 100}")
-cpupct=$(printf "%.2f%%" "$cpupct")
+cpuidle=$(vmstat 1 2 | tail -1 | awk '{print $15}')
+cpuused=$(awk "BEGIN {print (100 - $cpuidle)}")
+cpupct=$(printf "%.2f%%" "$cpuused")
 
 #Last boot date and time
 boottime=$(who -b | awk '{print $3 " " $4}')
@@ -306,25 +301,14 @@ At server startup, the script will display some information (listed below) on al
 
 ## Todo
 
-AppArmor for Debian must be running at startup
-- what is apparmor
-	user privilages manager
-- how to install
-- how to setup
-
-difference centOS, rocky, debian.
-difference apt, aptitude
-
-change passwords to be password manager complient.
-
 kijk hoe sudoreplay werkt
-
 
 ## Extra info
 
 check for stats in /proc/ -> has a lot of system info in simple text files
 sudo systemctl status cron -> current crontab status and a couple logs
 sudo journalctl -u cron -b -> check cron logs for current boot
+sudo apt install man-db -> install man pages on the server
 
 ## Submission and eval
 You only have to turn in a signature.txt file at the root of your Git repository.
@@ -343,3 +327,28 @@ This is an example of what kind of output you will get:
 {: .prompt-tip }
 <!-- markdownlint-restore -->
 
+commands for eval:
+- uname -a
+- service ufw status
+- service ssh status
+- adduser test
+- addgroup eval
+- adduser test eval
+- deluser test
+- delgroup eval
+- visudo
+- /etc/pam.d/common-password
+- /etc/login.defs
+- /etc/hostname
+- lsblk
+- sudo -V
+- sudo ufw
+- sudo ufw delete allow 4343
+- /usr/local/bin/monitoring.sh
+- sudo crontab -u root -e
+- sudo journalctl -u cron -b
+
+Current passwords:
+- root: Codam2025!
+- user mvan-rij: Codam2025!
+- drive encription: codam2025
