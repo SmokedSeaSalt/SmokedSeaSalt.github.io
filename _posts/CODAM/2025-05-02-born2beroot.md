@@ -97,6 +97,7 @@ You have to install and configure sudo following strict rules.
 2. touch /var/log/sudo/sudo.log
 3. change the sudo config file with: sudo visudo
 4. Add the following code to /etc/sudoers.tmp
+
 ```
 #Born2beRoot changes
 # change log folder
@@ -118,15 +119,19 @@ An SSH service will be running on the mandatory port 4242 in your virtual machin
 1. sudo apt install openssh-server -> install ssh
 2. sudo service ssh status -> check to make sure it is working
 3. sudo nano /etc/ssh/sshd_config -> edit ssh config file
+
 ```
 Port 4242
 
 PermitRootLogin no
 ```
+
 4. sudo nano /etc/ssh/ssh_config -> edit another ssh config file
+
 ```
 Port 4242
 ```
+
 5. sudo service ssh restart -> for the changes to apply
 6. sudo service ssh status -> check to make sure changes are applied
 
@@ -165,18 +170,22 @@ You have to configure your operating system with the UFW firewall and thus leave
 1. get pam_pwquality to use the flags: sudo apt install libpam-pwnquality
 2. change the expire time and minimum time before modification with: nano /etc/login.defs
 3. edit the following lines to:
+
 ```
 PASS_MAX_DAYS	30
 PASS_MIN_DAYS	2
 PASS_WARN_AGE	7
 ```
+
 4. change the password policy file with: nano /etc/pam.d/common-password
 5. add the following lines to:
+
 ```
 #Born2beRoot changes
 password	requisite		pam_pwquality.so retry=3 minlen=10 ucredit=-1 lcredit=-1 dcredit=-1 maxrepeat=3 difok=7 refect_username
 password	requisite		pam_pwquality.so retry=3 minlen=10 ucredit=-1 lcredit=-1 dcredit=-1 maxrepeat=3 refect_username enforce_for_root
 ```
+
 6. passwd -> start the password manager to change the password to a new one. mess around with it to check if the rules are applied correctly.
 
 ## set correct timezone and time
@@ -220,6 +229,7 @@ our script must always be able to display the following information:
 	- cat /var/log/sudo/sudo.log
 
 /usr/local/bin/monitoring.sh
+
 ```bash
 #!/bin/bash
 
@@ -294,6 +304,7 @@ At server startup, the script will display some information (listed below) on al
 1. sudo crontab -u root -e -> edit crontab for user root
 2. set to run the monitoring.sh every boot
 3. set to run the monitoring.sh every 10 minutes
+
 ```
 @reboot bash /usr/local/bin/monitoring.sh
 */10 * * * * bash /usr/local/bin/monitoring.sh
