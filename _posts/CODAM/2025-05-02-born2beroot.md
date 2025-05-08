@@ -65,7 +65,7 @@ install steps:
 
 
 
-## install sudo and setup users
+## Install sudo and setup users
 
 ### sudo
 1. su -> to enter root
@@ -81,7 +81,7 @@ install steps:
 4. exit -> log out and back in to mvan-rij
 5. groups -> sudo and user42 should be in there
 
-## setup sudo
+## Setup sudo
 [custom logfile](https://tverma.hashnode.dev/custom-sudo-logs-file-linux)\
 [sudoers manpage](https://linux.die.net/man/5/sudoers)\
 [password tries](https://askubuntu.com/questions/534868/how-can-i-change-the-number-of-password-entry-attempts-allowed-by-sudo)
@@ -162,7 +162,6 @@ You have to configure your operating system with the UFW firewall and thus leave
 5. login
 6. you now have a secure remote shell you can do anything on the server with (but with copy paste abilities from your normal system)
 
-
 ## Password policy
 [man page](https://linux.die.net/man/8/pam_pwquality)\
 [example implementation](https://www.velaninfo.com/rs/techtips/debian-vs-ubuntu-distros/)
@@ -182,13 +181,13 @@ PASS_WARN_AGE	7
 
 ```
 #Born2beRoot changes
-password	requisite		pam_pwquality.so retry=3 minlen=10 ucredit=-1 lcredit=-1 dcredit=-1 maxrepeat=3 difok=7 refect_username
-password	requisite		pam_pwquality.so retry=3 minlen=10 ucredit=-1 lcredit=-1 dcredit=-1 maxrepeat=3 refect_username enforce_for_root
+password	requisite		pam_pwquality.so retry=3 minlen=10 ucredit=-1 lcredit=-1 dcredit=-1 maxrepeat=3 difok=7 reject_username
+password	requisite		pam_pwquality.so retry=3 minlen=10 ucredit=-1 lcredit=-1 dcredit=-1 maxrepeat=3 reject_username enforce_for_root
 ```
 
 6. passwd -> start the password manager to change the password to a new one. mess around with it to check if the rules are applied correctly.
 
-## set correct timezone and time
+## Set correct timezone and time
 1. sudo timedatectl set-timezone Europe/Amsterdam
 	1. I got the message: Failed to connect to bus: No such file or directory\
 		I fixed this by running the command: sudo service systemd-logind start [found here](https://superuser.com/questions/1561076/systemctl-user-failed-to-connect-to-bus-no-such-file-or-directory-debian-9)
@@ -216,8 +215,8 @@ our script must always be able to display the following information:
 - The date and time of the last reboot.
 	- who -b
 - Whether LVM is active or not.
-	-lsblk but only get type colmn and grep for lvm there.
-	-lsblk -o TYPE
+	- lsblk but only get type colmn and grep for lvm there.
+	- lsblk -o TYPE
 - The number of active connections.
 	- ss -Ht state established
 - The number of users using the server.
@@ -312,9 +311,9 @@ At server startup, the script will display some information (listed below) on al
 
 ## Extra info
 
-check for stats in /proc/ -> has a lot of system info in simple text files
-sudo systemctl status cron -> current crontab status and a couple logs
-sudo journalctl -u cron -b -> check cron logs for current boot
+check for stats in /proc/ -> has a lot of system info in simple text files\
+sudo systemctl status cron -> current crontab status and a couple logs\
+sudo journalctl -u cron -b -> check cron logs for current boot\
 sudo apt install man-db -> install man pages on the server
 
 ## Submission and eval
