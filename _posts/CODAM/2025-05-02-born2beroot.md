@@ -250,7 +250,7 @@ rampct=$(printf "%.2f%%" "$rampct")
 
 #Current available storage and util rate %
 disktotal=$(df -m -x tmpfs | grep '/dev/' | grep -v '/boot' | awk '{disktotal += $2} END {print disktotal}')
-diskused=$(df -m -x tmpfs | grep '/dev/' | grep -v '/boot' | awk '{disktotal += $3} END {print disktotal}')
+diskused=$(df -m -x tmpfs | grep '/dev/' | grep -v '/boot' | awk '{diskused += $3} END {print diskused}')
 diskpct=$(awk "BEGIN {print ($diskused / $disktotal) * 100}")
 diskpct=$(printf "%.2f%%" "$diskpct")
 
@@ -283,7 +283,7 @@ wall "
 #Architechture:  $sysinfo
 #CPU physical:   $cpucount
 #vCPU:           $vcpucount
-#Memory Usage:   $ramused/${ramfree}MB (${rampct})
+#Memory Usage:   $ramused/${ramtotal}MB (${rampct})
 #Disk Usage:     $diskused/${disktotal}MB (${diskpct})
 #CPU load:       $cpupct
 #Last boot:      $boottime
