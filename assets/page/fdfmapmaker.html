@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid Editor</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 95%;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: rgb(255, 255, 255);
+        color: rgb(255, 255, 255);
+      }
+      .controls {
+        margin-bottom: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .control-group {
+        margin-right: 20px;
+        color: rgb(0, 0, 0);
+      }
+      button {
+        padding: 8px 16px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      #grid-container {
+        overflow: auto;
+        width: 100%;
+        margin-top: 20px;
+        border: 1px solid #ccc;
+      }
+      table {
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+      td {
+        border: 1px solid #ddd;
+        text-align: center;
+        cursor: pointer;
+        user-select: none;
+        width: 25px;
+        height: 25px;
+        min-width: 20px;
+        min-height: 20px;
+        max-width: 25px;
+        max-height: 25px;
+        font-size: 12px;
+        overflow: hidden;
+      }
+      .cell-filled {
+        background-color: #4caf50;
+        color: white;
+      }
+      textarea {
+        width: 100%;
+        height: 200px;
+        margin-top: 10px;
+        font-family: monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 class="control-group">Simple FdF map generator</h1>
+
+    <div class="controls">
+      <div class="control-group">
+        <label for="grid-width">Grid Width:</label>
+        <input type="number" id="grid-width" min="1" max="100" value="19">
+      </div>
+
+      <div class="control-group">
+        <label for="grid-height">Grid Height:</label>
+        <input type="number" id="grid-height" min="1" max="100" value="11">
+      </div>
+
+      <div class="control-group">
+        <label for="current-height">Current Height:</label>
+        <input type="number" id="current-height" min="-99" max="99" value="10">
+      </div>
+
+      <button id="create-grid">Resize Grid</button>
+      <button id="clear-grid">Clear Grid</button>
+    </div>
+
+    <div id="grid-container"></div>
+
+    <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+      <button id="copy-output">Copy Output</button>
+    </div>
+
+    <textarea id="output" readonly placeholder="Output will appear here"></textarea>
+
+    <script>
+      // DOM elements
+      const gridWidthInput = document.getElementById('grid-width');
+      const gridHeightInput = document.getElementById('grid-height');
+      const currentHeightInput = document.getElementById('current-height');
+      const createGridBtn = document.getElementById('create-grid');
+      const clearGridBtn = document.getElementById('clear-grid');
+      const copyOutputBtn = document.getElementById('copy-output');
+      const gridContainer = document.getElementById('grid-container');
+      const outputTextarea = document.getElementById('output');
+
+      // Grid data
+      let gridData = [];
+
+      // Create initial grid
+      window.addEventListener('load', createGrid);
+      window.addEventListener('resize', function () {
+        // Recreate grid on window resize to adjust cell sizes
+        if (gridData.length > 0) {
+          createGrid();
+          // Restore grid data
+          updateGridFromData();
+        }
+      });
+
+      // Mouse state tracking
+      let isDrawing = false;
+      let isErasing = false;
+
+      // Event listeners
+      createGridBtn.addEventListener('click', createGrid);
+      clearGridBtn.addEventListener('click', clearGrid);
+      copyOutputBtn.addEventListener('click', copyOutput);
+
+      // Add mouse event listeners for the document
+      document.addEventListener('mouseup', () => {
+        isDrawing = false;
+        isErasing = false;
+      });
+
+      // Create grid based on input values
+      function createGrid() {
+        const width = parseInt(gridWidthInput.value);
+        const height = parseInt(gridHeightInput.value);
+
+        // Initialize grid data
+        gridData = Array(height)
+          .fill()
+          .map(() => Array(width).fill(0));
+
+        // Create table with fixed cell size
+        const table = document.createElement('table');
+        table.style.width = 'auto'; // Don't expand to container width
+
+        // Create the table rows and cells
+        for (let i = 0; i < height; i++) {
+          const row = document.createElement('tr');
+
+          for (let j = 0; j < width; j++) {
+            const cell = document.createElement('td');
+            cell.dataset.row = i;
+            cell.dataset.col = j;
+
+            // Mouse events for drag drawing
+            cell.addEventListener('mousedown', startDrawing);
+            cell.addEventListener('mouseover', continueDraw);
+            cell.addEventListener('click', toggleCell); // Keep single click functionality
+
+            row.appendChild(cell);
+          }
+
+          table.appendChild(row);
+        }
+
+        // Clear and append new table
+        gridContainer.innerHTML = '';
+        gridContainer.appendChild(table);
+
+        // Generate output
+        generateOutput();
+      }
+
+      // Start drawing when mouse down
+      function startDrawing(e) {
+        e.preventDefault(); // Prevent text selection
+        const row = parseInt(e.target.dataset.row);
+        const col = parseInt(e.target.dataset.col);
+
+        // Determine if we're drawing or erasing based on current cell state
+        if (gridData[row][col] === 0) {
+          isDrawing = true;
+          isErasing = false;
+          fillCell(e.target);
+        } else {
+          isDrawing = false;
+          isErasing = true;
+          clearCell(e.target);
+        }
+      }
+
+      // Continue drawing when moving over cells with mouse down
+      function continueDraw(e) {
+        if (!isDrawing && !isErasing) return;
+
+        if (isDrawing) {
+          fillCell(e.target);
+        } else if (isErasing) {
+          clearCell(e.target);
+        }
+      }
+
+      // Toggle cell state when clicked
+      function toggleCell(e) {
+        const row = parseInt(e.target.dataset.row);
+        const col = parseInt(e.target.dataset.col);
+        fillCell(e.target);
+
+        // Update output
+        generateOutput();
+      }
+
+      // Fill a cell with current height
+      function fillCell(cell) {
+        const row = parseInt(cell.dataset.row);
+        const col = parseInt(cell.dataset.col);
+        const currentHeight = parseInt(currentHeightInput.value);
+
+        gridData[row][col] = currentHeight;
+        cell.classList.add('cell-filled');
+        cell.textContent = currentHeight;
+
+        // Update output
+        generateOutput();
+      }
+
+      // Clear a cell (set to 0)
+      function clearCell(cell) {
+        const row = parseInt(cell.dataset.row);
+        const col = parseInt(cell.dataset.col);
+
+        gridData[row][col] = 0;
+        cell.classList.remove('cell-filled');
+        cell.textContent = '';
+
+        // Update output
+        generateOutput();
+      }
+
+      // Clear the grid
+      function clearGrid() {
+        const width = parseInt(gridWidthInput.value);
+        const height = parseInt(gridHeightInput.value);
+
+        // Reset grid data
+        gridData = Array(height)
+          .fill()
+          .map(() => Array(width).fill(0));
+
+        // Reset cell styling
+        const cells = document.querySelectorAll('td');
+        cells.forEach((cell) => {
+          cell.classList.remove('cell-filled');
+          cell.textContent = '';
+        });
+
+        // Update output
+        generateOutput();
+      }
+
+      // Generate text output
+      function generateOutput() {
+        let output = '';
+
+        for (let i = 0; i < gridData.length; i++) {
+          output += gridData[i].join(' ');
+          if (i < gridData.length - 1) {
+            output += '\n';
+          }
+        }
+
+        outputTextarea.value = output;
+      }
+
+      // Copy output to clipboard
+      function copyOutput() {
+        outputTextarea.select();
+        document.execCommand('copy');
+
+        // Visual feedback
+        const originalText = copyOutputBtn.textContent;
+        copyOutputBtn.textContent = 'Copied!';
+        setTimeout(() => {
+          copyOutputBtn.textContent = originalText;
+        }, 1500);
+      }
+
+      // Update grid cells based on current gridData
+      function updateGridFromData() {
+        const cells = document.querySelectorAll('td');
+        cells.forEach((cell) => {
+          const row = parseInt(cell.dataset.row);
+          const col = parseInt(cell.dataset.col);
+
+          // Skip if out of bounds
+          if (row >= gridData.length || col >= gridData[0].length) return;
+
+          const value = gridData[row][col];
+          if (value !== 0) {
+            cell.classList.add('cell-filled');
+            cell.textContent = value;
+          } else {
+            cell.classList.remove('cell-filled');
+            cell.textContent = '';
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
