@@ -5,13 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grid Editor</title>
     <style>
+      .colorwhite {
+        color: #000000;
+        background-color: #ffffff;
+      }
+      .colorblack {
+        color: #ffffff;
+        background-color: #272727;
+      }
       body {
         font-family: Arial, sans-serif;
         max-width: 95%;
         margin: 0 auto;
         padding: 20px;
-        background-color: rgb(255, 255, 255);
-        color: rgb(255, 255, 255);
       }
       .controls {
         margin-bottom: 20px;
@@ -21,12 +27,10 @@
       }
       .control-group {
         margin-right: 20px;
-        color: rgb(0, 0, 0);
       }
       button {
         padding: 8px 16px;
         background-color: #4caf50;
-        color: white;
         border: none;
         border-radius: 4px;
         cursor: pointer;
@@ -40,6 +44,7 @@
         width: 100%;
         margin-top: 20px;
         border: 1px solid #ccc;
+        color: #000000;
       }
       table {
         border-collapse: collapse;
@@ -61,7 +66,6 @@
       }
       .cell-filled {
         background-color: #4caf50;
-        color: white;
       }
       textarea {
         width: 100%;
@@ -71,7 +75,7 @@
       }
     </style>
   </head>
-  <body>
+  <body id="mainbody" class="colorblack">
     <h1 class="control-group">Simple FdF map generator</h1>
 
     <div class="controls">
@@ -92,6 +96,7 @@
 
       <button id="create-grid">Resize Grid</button>
       <button id="clear-grid">Clear Grid</button>
+      <button id="darkmode">Brightmode</button>
     </div>
 
     <div id="grid-container"></div>
@@ -100,7 +105,7 @@
       <button id="copy-output">Copy Output</button>
     </div>
 
-    <textarea id="output" readonly placeholder="Output will appear here"></textarea>
+    <textarea class="colorblack" id="output" readonly placeholder="Output will appear here"></textarea>
 
     <script>
       // DOM elements
@@ -109,6 +114,7 @@
       const currentHeightInput = document.getElementById('current-height');
       const createGridBtn = document.getElementById('create-grid');
       const clearGridBtn = document.getElementById('clear-grid');
+      const toggleDarkmodeBtn = document.getElementById('darkmode');
       const copyOutputBtn = document.getElementById('copy-output');
       const gridContainer = document.getElementById('grid-container');
       const outputTextarea = document.getElementById('output');
@@ -135,12 +141,46 @@
       createGridBtn.addEventListener('click', createGrid);
       clearGridBtn.addEventListener('click', clearGrid);
       copyOutputBtn.addEventListener('click', copyOutput);
+      toggleDarkmodeBtn.addEventListener('click', toggleDarkmode);
 
       // Add mouse event listeners for the document
       document.addEventListener('mouseup', () => {
         isDrawing = false;
         isErasing = false;
       });
+
+      // Darkmode flag
+      let isDarkmode = true;
+      const toggledarkmode = document.getElementById("mainbody");
+      const toggletextarea = document.querySelector("textarea");
+
+      //toggle darkmode
+      function toggleDarkmode() {
+        if (isDarkmode == true) {
+          //main body
+          toggledarkmode.style.backgroundColor = "#ffffff";
+          toggledarkmode.style.color = "#000000";  
+          //textarea
+          toggletextarea.style.backgroundColor = "#ffffff";
+          toggletextarea.style.color = "#000000";
+          //toggle button text
+          toggleDarkmodeBtn.innerHTML="Darkmode";
+          //toggle flag
+          isDarkmode = false;
+        } else {
+          //main body
+          toggledarkmode.style.backgroundColor = "#272727";
+          toggledarkmode.style.color = "#ffffff";
+          //textarea
+          toggletextarea.style.backgroundColor = "#272727";
+          toggletextarea.style.color = "#ffffff";
+          //toggle button text
+          toggleDarkmodeBtn.innerHTML="Brightmode";
+          //toggle flag
+          isDarkmode = true;      
+        }
+      }
+
 
       // Create grid based on input values
       function createGrid() {
