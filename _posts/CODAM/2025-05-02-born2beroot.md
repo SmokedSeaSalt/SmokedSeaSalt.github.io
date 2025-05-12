@@ -102,6 +102,9 @@ You have to install and configure sudo following strict rules.
 #Born2beRoot changes
 # change log folder
 Defaults	logfile="/var/log/sudo/sudo.log"
+# add io logging
+Defaults	log_input, log_output
+Defaults	iolog_dir="/var/log/sudo"
 # set amount of password tries
 Defaults	passwd_tries=3
 # set new message on failed password
