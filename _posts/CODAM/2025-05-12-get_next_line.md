@@ -1,6 +1,6 @@
 ---
-title: ft_printf
-description: My ft_printf notes.
+title: get_next_line
+description: My get_next_line notes.
 author: Mathijs
 date: 2025-05-12 09:43:00 +0100
 categories: [CODAM]
