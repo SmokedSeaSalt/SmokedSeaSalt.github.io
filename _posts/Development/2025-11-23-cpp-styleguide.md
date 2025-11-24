@@ -45,7 +45,6 @@ if (x == 10)
 | Namespace      | UpperCamelCase       | `SWORD`            |
 
 ```
----
 BasedOnStyle: LLVM
 
 ### Indentation
@@ -84,7 +83,7 @@ PointerAlignment: Right   # int* x
 ### Spaces
 SpaceBeforeParens: ControlStatements
 SpaceInEmptyParentheses: false
-SpacesInParens: false
+#SpacesInParens: false #not supported in older clang
 SpacesInCStyleCastParentheses: false
 SpacesInAngles: false
 
@@ -101,5 +100,4 @@ IncludeBlocks: Regroup
 ### Comments
 ReflowComments: true
 
-...
 ```
