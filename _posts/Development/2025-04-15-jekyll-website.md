@@ -36,7 +36,7 @@ This makes even the text in the frame copy-able.
   - [ ] Language specific syntaxing
 - [ ] Projects
   - [ ] Shortcut keypad
-  - [ ]  
+  - [ ]
 - [ ] CODAM
   - [ ] Piscine
 - [ ] Learning/Documentation
@@ -53,19 +53,12 @@ In general the theory pages will be summaries of varied programming theories tha
 
 #### Big O notation
 
-I have always known what the big O notation meant, but wanted a clear visualisation with graph, code, example times and explanation in 0 place.
+I have always known what the big O notation meant, but wanted a clear visualisation with graph, code, example times and explanation in 1 place.
 
-#### Linked lists
+#### Data structures
 
-how do they work. how to use them, WHY and WHEN to use them.
-
-#### Language specific syntaxing
-
-How and why does the struct syntaxing work for C.
-how and why does the typedef syntaxing work for C.
-What is de difference between ++i or i++.
-char *str or char str[].
-difference between str++ and str[i].
+linked list, binary tree, set, hashmap.
+How do they work. How to use them, WHY and WHEN to use them.
 
 ### Projects
 
